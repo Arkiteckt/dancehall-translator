@@ -1,27 +1,24 @@
 const express = require('express');
 const router = express.Router();
+const Bounty = require('../models/Bounty');
 
 // Create a new bounty
 router.post('/create', async (req, res) => {
   try {
     const { songId, songTitle, originalLyrics, aiTranslation, flaggedLines, bountyAmount, currency } = req.body;
 
-    // Mock bounty creation
-    const bounty = {
-      id: `bounty_${Date.now()}`,
-      songId: songId || 'unknown',
-      songTitle: songTitle || 'Unknown Song',
-      originalLyrics: originalLyrics || '',
-      aiTranslation: aiTranslation || '',
-      flaggedLines: flaggedLines || [],
-      bountyAmount: bountyAmount || 5,
-      currency: currency || 'USDC',
-      status: 'open',
-      createdAt: new Date().toISOString(),
-      createdBy: req.body.userAddress || 'anonymous'
-    };
+    const bounty = await Bounty.create({
+      songId,
+      songTitle,
+      originalLyrics,
+      aiTranslation,
+      flaggedLines,
+      bountyAmount,
+      currency,
+      status: 'open'
+    });
 
-    console.log('✅ Bounty created:', bounty.id);
+    console.log('Bounty created:', bounty._id);
     
     res.status(201).json({
       success: true,
@@ -32,7 +29,7 @@ router.post('/create', async (req, res) => {
     console.error('Error creating bounty:', error);
     res.status(500).json({ 
       success: false,
-      message: 'Failed to create bounty'
+      message: 'Internal server error' 
     });
   }
 });
@@ -40,18 +37,7 @@ router.post('/create', async (req, res) => {
 // Get all bounties
 router.get('/', async (req, res) => {
   try {
-    // Mock bounties
-    const bounties = [
-      {
-        id: 'bounty_1',
-        songTitle: 'Sample Dancehall Song',
-        bountyAmount: 10,
-        currency: 'USDC',
-        status: 'open',
-        createdAt: new Date().toISOString()
-      }
-    ];
-
+    const bounties = await Bounty.find().sort({ createdAt: -1 });
     res.json({
       success: true,
       data: bounties
@@ -60,31 +46,43 @@ router.get('/', async (req, res) => {
     console.error('Error fetching bounties:', error);
     res.status(500).json({ 
       success: false,
-      message: 'Failed to fetch bounties' 
+      message: 'Internal server error' 
     });
   }
 });
 
-// Get specific bounty
-router.get('/:id', async (req, res) => {
+// Update a bounty
+router.put('/:id', async (req, res) => {
   try {
-    const bounty = {
-      id: req.params.id,
-      songTitle: 'Sample Song',
-      bountyAmount: 10,
-      status: 'open',
-      createdAt: new Date().toISOString()
-    };
+    const { humanTranslation, culturalNotes, status } = req.body;
+    
+    const bounty = await Bounty.findByIdAndUpdate(
+      req.params.id,
+      { 
+        humanTranslation, 
+        culturalNotes, 
+        status,
+        ...(status === 'completed' && { completedAt: new Date() })
+      },
+      { new: true }
+    );
+
+    if (!bounty) {
+      return res.status(404).json({
+        success: false,
+        message: 'Bounty not found'
+      });
+    }
 
     res.json({
       success: true,
       data: bounty
     });
   } catch (error) {
-    console.error('Error fetching bounty:', error);
+    console.error('Error updating bounty:', error);
     res.status(500).json({ 
       success: false,
-      message: 'Failed to fetch bounty' 
+      message: 'Internal server error' 
     });
   }
 });

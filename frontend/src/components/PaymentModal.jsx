@@ -1,16 +1,19 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 
-const PaymentModal = ({ request, payment, onComplete, onBack }) => {
+const PaymentModal = ({ request, payment, onComplete, onBack, userAddress }) => {
   const [isProcessing, setIsProcessing] = useState(false);
 
-  console.log('🎵 DANCEHALL TRANSLATOR PAYMENT 🎵');
-  console.log('Artist:', request?.artist);
-  console.log('Song:', request?.song);
-  console.log('Amount:', payment?.amount);
+  // Debug logs - UPDATED TO MATCH NEW BUTTON TEXT
+  console.log('💰 PAYMENT CONFIRMATION MODAL 💰');
+  console.log('Request exists:', request ? 'YES' : 'NO');
+  console.log('Artist:', request?.artist || request?.artistName);
+  console.log('Song:', request?.song || request?.songTitle);
+  console.log('Current Time:', new Date().toLocaleTimeString());
+  console.log('💰 PAYMENT CONFIRMATION BUTTON 💰');
 
-  const handleConfirm = async () => {
-    console.log('CONFIRM PAYMENT CLICKED');
+  const handlePay = async () => {
+    console.log('PAYMENT CONFIRMATION CLICKED!');
     setIsProcessing(true);
     
     if (onComplete && typeof onComplete === 'function') {
@@ -21,13 +24,20 @@ const PaymentModal = ({ request, payment, onComplete, onBack }) => {
     }
   };
 
+  const handleBack = () => {
+    if (onBack && typeof onBack === 'function') {
+      onBack();
+    }
+  };
+
+  // Inline styles
   const overlayStyle = {
     position: 'fixed',
     top: 0,
     left: 0,
     right: 0,
     bottom: 0,
-    background: 'rgba(0, 0, 0, 0.85)',
+    background: 'rgba(0, 0, 0, 0.8)',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
@@ -35,69 +45,67 @@ const PaymentModal = ({ request, payment, onComplete, onBack }) => {
   };
 
   const contentStyle = {
-    background: '#0a0a0a',
-    borderRadius: '12px',
-    padding: '24px',
+    background: '#0f0f0f',
+    borderRadius: '16px',
+    padding: '2rem',
     width: '90%',
-    maxWidth: '380px',
-    border: '1px solid #2a2a2a',
-    boxShadow: '0 8px 32px rgba(0, 0, 0, 0.4)'
+    maxWidth: '400px',
+    border: '1px solid #333'
   };
 
   const titleStyle = {
-    color: '#ffffff',
+    color: 'white',
     textAlign: 'center',
-    marginBottom: '20px',
-    fontSize: '20px',
+    marginBottom: '1.5rem',
+    fontSize: '1.5rem',
     fontWeight: '600'
   };
 
   const songCardStyle = {
-    background: '#151515',
-    padding: '16px',
-    borderRadius: '8px',
-    marginBottom: '16px',
-    border: '1px solid #2a2a2a'
+    background: '#1a1a1a',
+    padding: '1.2rem',
+    borderRadius: '10px',
+    marginBottom: '1.2rem',
+    border: '1px solid #333'
   };
 
-  const priceSectionStyle = {
-    background: '#151515',
-    padding: '20px',
-    borderRadius: '8px',
-    marginBottom: '20px',
+  const priceDisplayStyle = {
+    background: '#1a1a1a',
+    padding: '1.5rem',
+    borderRadius: '10px',
+    marginBottom: '1.5rem',
     textAlign: 'center',
-    border: '1px solid #2a2a2a'
+    border: '1px solid #333'
   };
 
   const priceStyle = {
-    fontSize: '28px',
+    fontSize: '2.5rem',
     fontWeight: 'bold',
     color: '#00d4aa'
   };
 
-  const confirmButtonStyle = {
+  const payButtonStyle = {
     width: '100%',
-    padding: '14px',
-    background: '#00d4aa',
-    color: '#000000',
+    padding: '1rem',
+    background: isProcessing ? '#666' : '#00d4aa',
+    color: 'black',
     border: 'none',
-    borderRadius: '8px',
-    fontSize: '16px',
-    fontWeight: '600',
-    cursor: 'pointer',
-    marginBottom: '12px',
-    transition: 'background 0.2s ease'
+    borderRadius: '10px',
+    fontSize: '1.1rem',
+    fontWeight: 'bold',
+    cursor: isProcessing ? 'not-allowed' : 'pointer',
+    marginBottom: '0.8rem',
+    transition: 'all 0.2s ease'
   };
 
   const cancelButtonStyle = {
     width: '100%',
-    padding: '12px',
+    padding: '0.8rem',
     background: 'transparent',
     color: '#888',
-    border: '1px solid #333',
-    borderRadius: '8px',
+    border: '1px solid #444',
+    borderRadius: '10px',
     cursor: 'pointer',
-    fontSize: '14px',
     transition: 'all 0.2s ease'
   };
 
@@ -107,6 +115,11 @@ const PaymentModal = ({ request, payment, onComplete, onBack }) => {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
+      onClick={(e) => {
+        if (e.target === e.currentTarget && onBack) {
+          handleBack();
+        }
+      }}
     >
       <motion.div
         style={contentStyle}
@@ -114,49 +127,53 @@ const PaymentModal = ({ request, payment, onComplete, onBack }) => {
         animate={{ scale: 1, opacity: 1 }}
         exit={{ scale: 0.9, opacity: 0 }}
       >
-        <h2 style={titleStyle}>Confirm Translation</h2>
+        <h2 style={titleStyle}>Confirm Payment</h2>
 
+        {/* Song Information */}
         {request && (
           <div style={songCardStyle}>
-            <div style={{ color: '#ffffff', marginBottom: '8px' }}>
-              <span style={{ color: '#666' }}>Artist: </span>
-              {request.artist || request.artistName}
+            <div style={{ color: 'white', marginBottom: '0.5rem' }}>
+              <strong>Artist:</strong> {request.artist || request.artistName || 'Unknown Artist'}
             </div>
-            <div style={{ color: '#ffffff' }}>
-              <span style={{ color: '#666' }}>Song: </span>
-              {request.song || request.songTitle}
+            <div style={{ color: 'white' }}>
+              <strong>Song:</strong> {request.song || request.songTitle || 'Unknown Song'}
             </div>
           </div>
         )}
 
-        <div style={priceSectionStyle}>
-          <div style={{ color: '#666', fontSize: '14px', marginBottom: '8px' }}>
-            Translation Cost
-          </div>
+        {/* Price Display */}
+        <div style={priceDisplayStyle}>
+          <div style={{ color: '#888', marginBottom: '0.5rem' }}>Total Amount</div>
           <div style={priceStyle}>${payment?.amount || '0.00'}</div>
         </div>
 
+        {/* PAYMENT CONFIRMATION BUTTON - UPDATED TEXT */}
         <button 
-          style={confirmButtonStyle}
-          onClick={handleConfirm} 
-          disabled={isProcessing}
-          onMouseOver={(e) => !isProcessing && (e.target.style.background = '#00b894')}
-          onMouseOut={(e) => !isProcessing && (e.target.style.background = '#00d4aa')}
+          style={payButtonStyle}
+          onClick={handlePay} 
+          disabled={isProcessing || !onComplete}
+          onMouseOver={(e) => {
+            if (!isProcessing) e.target.style.background = '#00b894';
+          }}
+          onMouseOut={(e) => {
+            if (!isProcessing) e.target.style.background = '#00d4aa';
+          }}
         >
-          {isProcessing ? 'Processing...' : 'Confirm Payment'}
+          {isProcessing ? 'Processing...' : `Confirm Payment - $${payment?.amount || '0.00'}`}
         </button>
 
+        {/* Cancel Button */}
         {onBack && (
           <button 
             style={cancelButtonStyle}
-            onClick={onBack}
+            onClick={handleBack}
             onMouseOver={(e) => {
               e.target.style.background = '#1a1a1a';
-              e.target.style.borderColor = '#444';
+              e.target.style.color = 'white';
             }}
             onMouseOut={(e) => {
               e.target.style.background = 'transparent';
-              e.target.style.borderColor = '#333';
+              e.target.style.color = '#888';
             }}
           >
             Cancel

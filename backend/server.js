@@ -1,3 +1,4 @@
+cat > server.js << 'EOF'
 const express = require('express');
 const cors = require('cors');
 
@@ -28,10 +29,9 @@ try {
   console.log('❌ Bounties route failed:', e.message);
 }
 
-// FIXED: Mount translation routes at /api/translate
 try {
   const translationRoute = require('./routes/translation.js');
-  app.use('/api/translate', translationRoute); // This mounts ALL translation routes at /api/translate
+  app.use('/api/translate', translationRoute);
   console.log('✅ Translation route loaded');
 } catch (e) {
   console.log('❌ Translation route failed:', e.message);
@@ -64,7 +64,7 @@ app.get('/', (req, res) => {
       '/api/bounties', 
       '/api/translate',
       '/api/audio',
-      '/api/blockchain'
+      '/api/blockchain'  // ADD THIS LINE
     ]
   });
 });
@@ -76,20 +76,11 @@ app.get('/api/health', (req, res) => {
   });
 });
 
-// TEST ENDPOINT - Add this to verify the route is working
-app.post('/api/translate/test', (req, res) => {
-  res.json({ 
-    success: true,
-    message: 'Translation endpoint is reachable',
-    data: req.body
-  });
-});
-
 const PORT = process.env.PORT || 3001;
 
 app.listen(PORT, () => {
   console.log('🚀 Server running on port', PORT);
   console.log('📱 API: http://localhost:' + PORT);
   console.log('💰 Price estimation: /api/estimate-price');
-  console.log('🎵 Translation: POST /api/translate');
 });
+EOF
