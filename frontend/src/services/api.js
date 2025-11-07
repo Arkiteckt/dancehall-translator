@@ -1,5 +1,5 @@
-
-const API_BASE_URL = 'http://localhost:3001/api';
+// services/api.js
+const API_BASE_URL = '/api';
 
 export const translationAPI = {
   async healthCheck() {
@@ -58,11 +58,8 @@ export const translationAPI = {
   async requestTranslation(request) {
     console.log('🚀 [API] Calling REAL backend translation...');
     console.log('🚀 [API] Full request object:', JSON.stringify(request, null, 2));
-    console.log('🚀 [API] Artist in request:', request.artist);
-    console.log('🚀 [API] Song in request:', request.song);
     
     try {
-      // Use the EXACT field names that your backend expects
       const backendRequest = {
         lyrics: request.lyrics || '',
         artist: request.artist || 'Unknown Artist',
@@ -71,8 +68,7 @@ export const translationAPI = {
       
       console.log('📡 [API] Final backend request being sent:', JSON.stringify(backendRequest, null, 2));
       
-      // FIXED: Use the correct endpoint with trailing slash
-      const response = await fetch(`${API_BASE_URL}/translate/`, {
+      const response = await fetch(`${API_BASE_URL}/translate`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -91,24 +87,16 @@ export const translationAPI = {
       const result = await response.json();
       console.log('🟢 [API] REAL backend translation success - Full response:', result);
       
-      // FIXED: Backend returns data directly, not wrapped in "data" object
-      if (result.translatedText || result.translated) {
-        console.log('✅ [API] Valid translation response received');
-        return {
-          translatedText: result.translatedText || result.translated,
-          original: result.original || request.lyrics || '',
-          culturalNotes: result.culturalNotes || [],
-          confidence: result.confidence || 0.9,
-          processingTime: result.processingTime || 2.5,
-          artist: result.artist || request.artist,
-          song: result.song || request.song,
-          blockchain: result.blockchain,
-          wordCount: result.wordCount
-        };
-      } else {
-        console.error('❌ [API] Invalid response structure:', result);
-        throw new Error('Invalid response from translation service');
-      }
+      return {
+        translatedText: result.translatedText,
+        original: result.original || request.lyrics || '',
+        culturalNotes: result.culturalNotes || [],
+        confidence: result.confidence || 0.9,
+        processingTime: result.processingTime || 2.5,
+        artist: result.artist || request.artist,
+        song: result.song || request.song,
+        wordCount: result.wordCount
+      };
       
     } catch (error) {
       console.error('🔴 [API] REAL translation API failed:', error.message);
@@ -116,57 +104,8 @@ export const translationAPI = {
     }
   },
 
-  // Test the translation endpoint directly
-  async testTranslationEndpoint() {
-    try {
-      console.log('🧪 Testing translation endpoint directly...');
-      const testRequest = {
-        lyrics: "Hello world test translation",
-        artist: "Test Artist",
-        song: "Test Song"
-      };
-      
-      const response = await fetch(`${API_BASE_URL}/translate/`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(testRequest),
-      });
-      
-      console.log('🧪 Test response status:', response.status);
-      const result = await response.json();
-      console.log('🧪 Test response:', result);
-      return result;
-      
-    } catch (error) {
-      console.error('🧪 Test failed:', error);
-      throw error;
-    }
-  },
-
-  // Sanitize request to ensure valid JSON
-  sanitizeRequest(request) {
-    if (!request) {
-      return {
-        song: 'Unknown Song',
-        artist: 'Unknown Artist',
-        lyrics: '',
-        songId: `fallback_${Date.now()}`
-      };
-    }
-    
-    return {
-      song: request.song || request.songTitle || 'Unknown Song',
-      artist: request.artist || request.artistName || 'Unknown Artist',
-      lyrics: request.lyrics || '',
-      songId: request.songId || `song_${Date.now()}`
-    };
-  },
-
   createMockPriceEstimate(request) {
-    const safeRequest = this.sanitizeRequest(request);
-    const wordCount = safeRequest.lyrics ? safeRequest.lyrics.split(/\s+/).length : 50;
+    const wordCount = request.lyrics ? request.lyrics.split(/\s+/).length : 50;
     const basePrice = 5;
     const wordPrice = Math.ceil(wordCount / 100) * 2;
     const totalPrice = Math.min(basePrice + wordPrice, 25);
@@ -176,7 +115,7 @@ export const translationAPI = {
         price: totalPrice,
         complexity: wordCount > 200 ? 'high' : wordCount > 100 ? 'medium' : 'low',
         wordCount: wordCount,
-        lineCount: safeRequest.lyrics ? safeRequest.lyrics.split('\n').length : 10,
+        lineCount: request.lyrics ? request.lyrics.split('\n').length : 10,
         currency: 'USD'
       },
       success: true,
