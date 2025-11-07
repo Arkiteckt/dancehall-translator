@@ -171,7 +171,7 @@ function TranslationResult({
   onBack
 }) {
   // ULTIMATE DEBUGGING
-  console.log('🔍��🔍 TranslationResult - COMPONENT RENDERED 🔍🔍🔍');
+  console.log('🔍🔍🔍 TranslationResult - COMPONENT RENDERED 🔍🔍🔍');
   console.log('🔍 Request prop:', request);
   console.log('🔍 Result prop:', result);
   console.log('🔍 Result type:', typeof result);
@@ -184,20 +184,10 @@ function TranslationResult({
   console.log('🔍 TranslatedLyrics value:', result?.translatedLyrics);
   console.log('🔍 translatedText value:', result?.translatedText);
 
-  // Check ALL possible translation fields
-  console.log('🔍 ALL TRANSLATION FIELDS:');
-  console.log('🔍 - translatedText:', result?.translatedText);
-  console.log('🔍 - translated:', result?.translated);
-  console.log('🔍 - translation:', result?.translation);
-  console.log('🔍 - text:', result?.text);
-  console.log('🔍 - data:', result?.data);
-  console.log('🔍 - data?.translatedText:', result?.data?.translatedText);
-  console.log('🔍 - data?.text:', result?.data?.text);
-
   const downloadTranslation = () => {
     // FIXED: Use the correct data structure
     const originalLyrics = request?.lyrics || 'No lyrics available';
-    const translatedLyrics = result?.translatedText || result?.translated || result?.translation || result?.text || result?.data?.translatedText || result?.data?.text || 'No translation available';
+    const translatedLyrics = result?.translatedText || result?.translated || result?.translation || 'No translation available';
     
     const content = `
 Dancehall Translator - Translation
@@ -231,20 +221,12 @@ Translated by Dancehall Translator
     URL.revokeObjectURL(url);
   };
 
-  // FIXED: Use the actual API response structure - check ALL possible fields
+  // FIXED: Use the actual API response structure
   const originalLyrics = request?.lyrics || 'Original lyrics not available';
-  const translatedLyrics = result?.translatedText || result?.translated || result?.translation || result?.text || result?.data?.translatedText || result?.data?.text || 'Translation not available';
+  const translatedLyrics = result?.translatedText || result?.translated || result?.translation || 'Translation not available';
 
   console.log('🔍 Final originalLyrics:', originalLyrics);
   console.log('🔍 Final translatedLyrics:', translatedLyrics);
-
-  // Handle human review with proper translation data
-  const handleHumanReview = () => {
-    const translationToSend = result?.translatedText || result?.translated || result?.translation || result?.text || result?.data?.translatedText || result?.data?.text;
-    console.log('🔍 Sending to human review:', translationToSend);
-    console.log('🔍 Translation length:', translationToSend?.length);
-    onRequestHumanVerification(translationToSend);
-  };
 
   return (
     <ResultContainer
@@ -331,7 +313,7 @@ Translated by Dancehall Translator
         </BackButton>
         
         <HumanReviewButton
-          onClick={handleHumanReview}
+          onClick={() => onRequestHumanVerification(result?.translatedText)}
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
         >

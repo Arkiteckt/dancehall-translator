@@ -38,6 +38,9 @@ const AppContainer = styled.div`
 `;
 
 function App() {
+  // FORCE REFRESH DETECTION
+  console.log('🔄 APP.JSX RELOADED - Version: ', Date.now());
+  
   const [walletConnected, setWalletConnected] = useState(false);
   const [userAddress, setUserAddress] = useState('');
   const [currentView, setCurrentView] = useState('dashboard');
@@ -65,22 +68,13 @@ function App() {
     checkBackend();
   }, []);
 
-  // Debug effects for development
+  // ADD THIS DEBUG EFFECT
   useEffect(() => {
     console.log('🔍 APP STATE UPDATE:');
     console.log('🔍 currentView:', currentView);
     console.log('🔍 translationRequest:', translationRequest);
     console.log('🔍 translationResult:', translationResult);
   }, [currentView, translationRequest, translationResult]);
-
-  // Add this useEffect to debug the translationRequest state
-  useEffect(() => {
-    console.log('🔍 translationRequest STATE UPDATED:', translationRequest);
-    console.log('🔍 Artist in state:', translationRequest?.artist);
-    console.log('🔍 Song in state:', translationRequest?.song);
-    console.log('�� Lyrics in state:', translationRequest?.lyrics);
-    console.log('🔍 Lyrics length:', translationRequest?.lyrics?.length);
-  }, [translationRequest]);
 
   const connectWallet = (address) => {
     setUserAddress(address);
@@ -103,15 +97,10 @@ function App() {
     return priceData.price.toString();
   };
 
-  // PROPER PAYMENT FLOW - FIXED VERSION WITH DEBUG LOGGING
+  // PROPER PAYMENT FLOW - FIXED VERSION
   const handleTranslationRequest = async (request) => {
     console.log('🎵🎵🎵 handleTranslationRequest CALLED 🎵🎵🎵');
-    console.log('🎵 Full request object from form:', JSON.stringify(request, null, 2));
-    console.log('🎵 Artist value:', request.artist);
-    console.log('🎵 Song value:', request.song);
-    console.log('🎵 Year value:', request.year);
-    console.log('🎵 Lyrics value:', request.lyrics);
-    console.log('🎵 Lyrics length:', request.lyrics?.length);
+    console.log('🎵 Received request data:', request);
     
     if (backendStatus !== 'connected') {
       alert('Backend server is not available.');
@@ -120,29 +109,10 @@ function App() {
 
     setIsLoading(true);
     try {
-      console.log('💰 Calling estimatePrice API...');
       const priceData = await translationAPI.estimatePrice(request);
-      console.log('💰 Price estimate received:', priceData);
-      
       const safePrice = getSafePrice(priceData);
       
-      // DEBUG: Log what we're saving to state
-      console.log('💾 Saving to translationRequest state:', {
-        artist: request.artist,
-        song: request.song,
-        year: request.year,
-        lyrics: request.lyrics,
-        lyricsLength: request.lyrics?.length
-      });
-      
-      setTranslationRequest({
-        artist: request.artist,
-        song: request.song,
-        year: request.year,
-        lyrics: request.lyrics,
-        id: request.id || `req_${Date.now()}`
-      });
-      
+      setTranslationRequest(request);
       setPaymentDetails({
         amount: safePrice,
         amountWei: ethers.parseUnits(safePrice, 6).toString(),
@@ -160,25 +130,14 @@ function App() {
     }
   };
 
-  // REAL AI TRANSLATION - UPDATED VERSION WITH DEBUG LOGGING
+  // REAL AI TRANSLATION - UPDATED VERSION
   const handlePaymentComplete = async () => {
     console.log('💰 Payment completed, starting REAL AI translation...');
     console.log('💰 translationRequest:', translationRequest);
-    console.log('💰 translationRequest lyrics:', translationRequest?.lyrics);
-    console.log('💰 translationRequest lyrics length:', translationRequest?.lyrics?.length);
     
     if (!translationRequest) {
       console.error('❌ translationRequest is null or undefined!');
       alert('Translation request data is missing. Please start over.');
-      setIsLoading(false);
-      return;
-    }
-
-    // DEBUG: Check if we have lyrics
-    if (!translationRequest.lyrics) {
-      console.error('❌ NO LYRICS FOUND in translationRequest!');
-      console.error('❌ Full translationRequest object:', translationRequest);
-      alert('No lyrics found. Please go back and enter lyrics.');
       setIsLoading(false);
       return;
     }
@@ -192,12 +151,7 @@ function App() {
       id: translationRequest.id || `req_${Date.now()}`
     };
 
-    console.log('🟡 FINAL REQUEST being sent to backend:', safeRequest);
-    console.log('🟡 Artist being sent:', safeRequest.artist);
-    console.log('🟡 Song being sent:', safeRequest.song);
-    console.log('🟡 Lyrics being sent (first 100 chars):', safeRequest.lyrics.substring(0, 100));
-    console.log('🟡 Full lyrics length:', safeRequest.lyrics.length);
-    
+    console.log('🟡 Calling REAL backend API with:', safeRequest);
     setIsLoading(true);
     
     try {
@@ -279,10 +233,32 @@ function App() {
     );
   }
 
+  // FINAL CHECK LOG - Only log when we're about to render result view
+  if (currentView === 'result' && translationResult) {
+    console.log('🎵 FINAL CHECK - About to render TranslationResult:');
+    console.log('🎵 translationResult:', translationResult);
+    console.log('🎵 translationRequest:', translationRequest);
+  }
+
   return (
     <>
       <GlobalStyle />
       <AppContainer>
+        {/* TEMPORARY DEBUG - This should definitely show */}
+        <div style={{
+          position: 'fixed',
+          top: '10px',
+          left: '10px',
+          background: 'lime',
+          color: 'black',
+          padding: '10px',
+          zIndex: 9999,
+          fontSize: '14px',
+          fontWeight: 'bold'
+        }}>
+          🟢 APP LOADED: {new Date().toLocaleTimeString()}
+        </div>
+        
         <Layout 
           currentView={currentView}
           onViewChange={setCurrentView}
@@ -320,14 +296,65 @@ function App() {
             )}
             
             {currentView === 'result' && translationResult && (
-              <TranslationResult 
-                key="result"
-                request={translationRequest}
-                result={translationResult}
-                onNewTranslation={startNewTranslation}
-                onRequestHumanVerification={handleRequestHumanReview}
-                onBack={() => setCurrentView('dashboard')}
-              />
+              <>
+                {/* ENHANCED DEBUG PANEL - FIXED */}
+                <div style={{
+                  position: 'fixed',
+                  top: '50px',
+                  left: '10px',
+                  background: 'red',
+                  color: 'white',
+                  padding: '10px',
+                  zIndex: 9999,
+                  fontSize: '12px',
+                  maxWidth: '400px',
+                  border: '2px solid yellow'
+                }}>
+                  <div><strong>🎵 REAL AI TRANSLATION DEBUG:</strong></div>
+                  <div>Has Result: {translationResult ? 'YES' : 'NO'}</div>
+                  <div>Original: {translationResult.original ? `${translationResult.original.length} chars` : 'NO'}</div>
+                  <div>Translated: {translationResult.translatedText ? `${translationResult.translatedText.length} chars` : 'NO'}</div>
+                  <div>All Keys: {translationResult ? Object.keys(translationResult).join(', ') : 'NONE'}</div>
+                  <div>View: {currentView}</div>
+                </div>
+
+                {/* TEMPORARY: Render lyrics directly in App.jsx to test - FIXED */}
+                <div style={{
+                  position: 'fixed',
+                  top: '200px',
+                  left: '10px',
+                  background: 'blue',
+                  color: 'white',
+                  padding: '10px',
+                  zIndex: 9999,
+                  fontSize: '12px',
+                  maxWidth: '400px',
+                  border: '2px solid cyan'
+                }}>
+                  <div><strong>🔵 DIRECT RENDER TEST:</strong></div>
+                  <div style={{background: 'green', margin: '5px', padding: '5px'}}>
+                    <div><strong>ORIGINAL:</strong></div>
+                    <div style={{fontSize: '10px', maxHeight: '100px', overflow: 'auto'}}>
+                      {translationResult.original || 'NO ORIGINAL'}
+                    </div>
+                  </div>
+                  <div style={{background: 'purple', margin: '5px', padding: '5px'}}>
+                    <div><strong>TRANSLATED:</strong></div>
+                    <div style={{fontSize: '10px', maxHeight: '100px', overflow: 'auto'}}>
+                      {translationResult.translatedText || 'NO TRANSLATED'}
+                    </div>
+                  </div>
+                </div>
+                
+                <TranslationResult 
+                  key="result"
+                  request={translationRequest}
+                  result={translationResult}
+                  onNewTranslation={startNewTranslation}
+                  onRequestHumanVerification={handleRequestHumanReview}
+                  onBack={() => setCurrentView('dashboard')}
+                />
+              </>
             )}
           </AnimatePresence>
 
