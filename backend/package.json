@@ -1,0 +1,23 @@
+{
+  "name": "dancehall-backend",
+  "version": "1.0.0",
+  "scripts": {
+    "dev": "NODE_ENV=development node server.js",
+    "start": "NODE_ENV=production node server.js"
+  },
+  "dependencies": {
+    "@google-cloud/translate": "^9.2.1",
+    "@irys/sdk": "^0.2.11",
+    "arweave": "^1.15.7",
+    "axios": "^1.13.1",
+    "cors": "^2.8.5",
+    "dotenv": "^17.2.3",
+    "ethers": "^6.15.0",
+    "express": "^4.21.2",
+    "openai": "^6.8.1",
+    "warp-contracts": "^1.4.45"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.10"
+  }
+}

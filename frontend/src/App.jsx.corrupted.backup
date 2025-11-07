@@ -1,0 +1,226 @@
+import React, { useState, useEffect } from 'react';
+import { ethers } from 'ethers';
+import styled, { createGlobalStyle } from 'styled-components';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Music, Wallet, Globe, Play, Check, Loader } from 'lucide-react';
+
+import Header from './components/Header';
+import TranslationRequest from './components/TranslationRequest';
+import PaymentModal from './components/PaymentModal';
+import TranslationResult from './components/TranslationResult';
+import { translationAPI } from './services/api';
+import WalletConnect from './components/AdvancedWalletConnect';
+
+
+const GlobalStyle = createGlobalStyle`
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+
+  body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    min-height: 100vh;
+    color: #333;
+  }
+
+  #root {
+    min-height: 100vh;
+  }
+`;
+
+const AppContainer = styled.div`
+  min-height: 100vh;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  padding: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+`;
+
+const MainContent = styled(motion.main)`
+  width: 100%;
+  max-width: 1200px;
+  padding: 20px;
+`;
+
+const LoadingOverlay = styled(motion.div)`
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  color: white;
+  flex-direction: column;
+  gap: 20px;
+`;
+
+function App() {
+  const [walletConnected, setWalletConnected] = useState(false);
+const [isVerificationModalOpen, setIsVerificationModalOpen] = useState(false);
+const [currentSongData, setCurrentSongData] = useState(null);
+  const [userAddress, setUserAddress] = useState('');
+const [isVerificationModalOpen, setIsVerificationModalOpen] = useState(false);
+const [currentSongData, setCurrentSongData] = useState(null);
+  const [currentStep, setCurrentStep] = useState('connect');
+const [isVerificationModalOpen, setIsVerificationModalOpen] = useState(false);
+const [currentSongData, setCurrentSongData] = useState(null);
+  const [translationRequest, setTranslationRequest] = useState(null);
+const [isVerificationModalOpen, setIsVerificationModalOpen] = useState(false);
+const [currentSongData, setCurrentSongData] = useState(null);
+  const [paymentDetails, setPaymentDetails] = useState(null);
+const [isVerificationModalOpen, setIsVerificationModalOpen] = useState(false);
+const [currentSongData, setCurrentSongData] = useState(null);
+  const [translationResult, setTranslationResult] = useState(null);
+const [isVerificationModalOpen, setIsVerificationModalOpen] = useState(false);
+const [currentSongData, setCurrentSongData] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
+const [isVerificationModalOpen, setIsVerificationModalOpen] = useState(false);
+const [currentSongData, setCurrentSongData] = useState(null);
+  const [backendStatus, setBackendStatus] = useState('checking');
+const [isVerificationModalOpen, setIsVerificationModalOpen] = useState(false);
+const [currentSongData, setCurrentSongData] = useState(null);
+
+  // Check backend health on app start
+  useEffect(() => {
+    const checkBackend = async () => {
+      try {
+        await translationAPI.healthCheck();
+        setBackendStatus('connected');
+      } catch (error) {
+        setBackendStatus('disconnected');
+        console.error('Backend not available:', error);
+      }
+    };
+    
+    checkBackend();
+  }, []);
+
+  const connectWallet = (address) => {
+    setUserAddress(address);
+    setWalletConnected(true);
+    setCurrentStep('request');
+  };
+
+  const handleTranslationRequest = async (request) => {
+    if (backendStatus !== 'connected') {
+      alert('Backend server is not available. Please make sure the backend is running on port 3001.');
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      // Get price estimate from backend
+      const priceData = await translationAPI.estimatePrice(request);
+      
+      setTranslationRequest(request);
+      setPaymentDetails({
+        amount: priceData.price.toString(),
+        amountWei: ethers.parseUnits(priceData.price.toString(), 6).toString(),
+        invoiceId: `inv_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+        recipient: '0x742d35Cc6634C0532925a3b8D...',
+        complexity: priceData.complexity
+      });
+      setCurrentStep('payment');
+    } catch (error) {
+      console.error('Price estimation failed:', error);
+      alert('Failed to get price estimate. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handlePaymentComplete = async () => {
+    setIsLoading(true);
+    try {
+      // Call the backend to perform the actual translation
+      const result = await translationAPI.requestTranslation(translationRequest);
+      setTranslationResult(result);
+      setCurrentStep('result');
+    } catch (error) {
+      console.error('Translation failed:', error);
+      alert('Translation failed. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const startNewTranslation = () => {
+    setTranslationRequest(null);
+    setPaymentDetails(null);
+    setTranslationResult(null);
+    setCurrentStep('request');
+  };
+
+  const disconnectWallet = () => {
+    setWalletConnected(false);
+    setUserAddress('');
+    setCurrentStep('connect');
+  };
+
+  return (
+    <>
+      <GlobalStyle />
+      <AppContainer>
+        <MainContent>
+          <AnimatePresence mode="wait">
+            {!walletConnected ? (
+              <WalletConnect 
+                key="connect"
+                onConnect={connectWallet}
+              />
+            ) : currentStep === 'request' ? (
+              <TranslationRequest 
+                key="request"
+                onSubmit={handleTranslationRequest}
+                backendStatus={backendStatus}
+                userAddress={userAddress}
+                onDisconnect={disconnectWallet}
+              />
+            ) : currentStep === 'payment' ? (
+              <PaymentModal 
+                key="payment"
+                request={translationRequest}
+                payment={paymentDetails}
+                onComplete={handlePaymentComplete}
+                onBack={() => setCurrentStep('request')}
+                userAddress={userAddress}
+              />
+            ) : currentStep === 'result' ? (
+              <TranslationResult 
+                key="result"
+                request={translationRequest}
+                result={translationResult}
+                onNewTranslation={startNewTranslation}
+                userAddress={userAddress}
+              />
+            ) : null}
+          </AnimatePresence>
+        </MainContent>
+
+        {/* Loading Overlay */}
+        <AnimatePresence>
+          {isLoading && (
+            <LoadingOverlay
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+            >
+              <Loader size={48} className="animate-spin" />
+              <p>Processing your request...</p>
+            </LoadingOverlay>
+          )}
+        </AnimatePresence>
+      </AppContainer>
+    </>
+  );
+}
+
+export default App;
