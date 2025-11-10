@@ -14,17 +14,15 @@ router.post("/estimate-price", async (req, res) => {
       });
     }
 
-    // Calculate price based on lyrics length and complexity
     const wordCount = lyrics.split(/\s+/).length;
     const lineCount = lyrics.split('\n').filter(line => line.trim()).length;
     
-    let basePrice = 5; // $5 minimum
+    let basePrice = 5;
     
     if (wordCount > 100) basePrice += Math.floor(wordCount / 50) * 2;
     if (complexity === "high") basePrice *= 1.5;
     if (complexity === "low") basePrice *= 0.8;
 
-    // Cap at $50 maximum
     const finalPrice = Math.min(basePrice, 50);
 
     res.json({
@@ -47,7 +45,7 @@ router.post("/estimate-price", async (req, res) => {
   }
 });
 
-// REAL AI Translation endpoint
+// REAL AI Translation endpoint - CLEAR FORMAT
 router.post("/", async (req, res) => {
   try {
     const { lyrics, artist, song } = req.body;
@@ -55,6 +53,7 @@ router.post("/", async (req, res) => {
     if (!lyrics) {
       return res.status(400).json({
         success: false,
+        error: "Lyrics are required",
         message: "Lyrics are required"
       });
     }
@@ -65,41 +64,50 @@ router.post("/", async (req, res) => {
     const translatedText = await translateDancehallLyrics(lyrics, artist, song);
     const culturalNotes = generateCulturalNotes(lyrics, translatedText);
 
-    const translationResult = {
-      translatedText: translatedText,  // ← ADDED: Main field frontend expects
-      original: lyrics,
-      translated: translatedText,      // ← KEEP: For compatibility
-      originalLyrics: lyrics,
-      translatedLyrics: translatedText,
-      culturalNotes: culturalNotes,
+    // CLEAR, CONSISTENT RESPONSE FORMAT
+    const response = {
+      success: true,
+      translatedText: translatedText,  // Main translation field
+      original: lyrics,                // Original text
+      culturalNotes: culturalNotes,    // Cultural context
       confidence: 0.95,
-      processingTime: 2.5,             // ← CHANGED: Use static value instead of Date.now()
+      processingTime: 2.5,
       wordCount: lyrics.split(/\s+/).length,
-      mock: false,
-      success: true
+      artist: artist || 'Unknown Artist',
+      song: song || 'Unknown Song'
     };
 
-    console.log('✅ Translation completed successfully');
-    console.log('🔍 BACKEND DEBUG - Final response:');
-    console.log('🔍 Translation text length:', translatedText?.length);
-    console.log('🔍 Translation text preview:', translatedText?.substring(0, 100));
-    console.log('🔍 Full response being sent:', {
-      success: true,
-      data: translationResult
+    console.log('✅ Translation completed - sending clear response format');
+    console.log('📝 Response preview:', {
+      success: response.success,
+      translatedTextLength: response.translatedText?.length,
+      hasCulturalNotes: response.culturalNotes?.length > 0
     });
-
-    res.json({
-      success: true,
-      data: translationResult
-    });
+    
+    res.json(response);
 
   } catch (error) {
     console.error("❌ Translation failed:", error);
+    
     res.status(500).json({
       success: false,
-      message: `Translation failed: ${error.message}`
+      error: error.message,
+      message: error.message
     });
   }
+});
+
+// Test endpoint
+router.get("/test", (req, res) => {
+  res.json({
+    success: true,
+    message: "Translation API is working",
+    endpoints: {
+      "POST /": "Translate lyrics",
+      "POST /estimate-price": "Get price estimate", 
+      "GET /test": "Test connection"
+    }
+  });
 });
 
 module.exports = router;

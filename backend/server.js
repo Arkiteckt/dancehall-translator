@@ -1,4 +1,3 @@
-cat > server.js << 'EOF'
 const express = require('express');
 const cors = require('cors');
 
@@ -12,7 +11,7 @@ app.use(express.json());
 
 console.log('🔧 Starting Dancehall Translator Backend...');
 
-// Load routes - INCLUDE ESTIMATE-PRICE FIRST
+// Load routes
 try {
   const estimatePriceRoute = require('./routes/estimate-price.js');
   app.use('/api/estimate-price', estimatePriceRoute);
@@ -45,7 +44,7 @@ try {
   console.log('❌ Audio route failed:', e.message);
 }
 
-// ADD BLOCKCHAIN ROUTE HERE
+// Blockchain route
 try {
   const blockchainRoute = require('./routes/blockchain.js');
   app.use('/api/blockchain', blockchainRoute);
@@ -64,7 +63,7 @@ app.get('/', (req, res) => {
       '/api/bounties', 
       '/api/translate',
       '/api/audio',
-      '/api/blockchain'  // ADD THIS LINE
+      '/api/blockchain'
     ]
   });
 });
@@ -83,4 +82,3 @@ app.listen(PORT, () => {
   console.log('📱 API: http://localhost:' + PORT);
   console.log('💰 Price estimation: /api/estimate-price');
 });
-EOF

@@ -1,9 +1,11 @@
-// services/api.js
-const API_BASE_URL = '/api';
+const API_BASE_URL = import.meta.env.DEV 
+  ? 'http://localhost:3001/api'  // Development
+  : '/api';                      // Production
 
 export const translationAPI = {
   async healthCheck() {
     try {
+      console.log('🔍 Health check to:', `${API_BASE_URL}/health`);
       const response = await fetch(`${API_BASE_URL}/health`);
       if (response.ok) {
         const result = await response.json();
@@ -19,11 +21,7 @@ export const translationAPI = {
 
   async estimatePrice(request) {
     try {
-      console.log('💰 Estimating price with real backend...', {
-        lyricsLength: request.lyrics?.length,
-        artist: request.artist,
-        song: request.song
-      });
+      console.log('💰 Estimating price with real backend...');
 
       const response = await fetch(`${API_BASE_URL}/estimate-price`, {
         method: 'POST',
@@ -57,7 +55,7 @@ export const translationAPI = {
 
   async requestTranslation(request) {
     console.log('🚀 [API] Calling REAL backend translation...');
-    console.log('🚀 [API] Full request object:', JSON.stringify(request, null, 2));
+    console.log('🚀 [API] Backend URL:', `${API_BASE_URL}/translate`);
     
     try {
       const backendRequest = {
@@ -87,15 +85,44 @@ export const translationAPI = {
       const result = await response.json();
       console.log('🟢 [API] REAL backend translation success - Full response:', result);
       
+      // FLEXIBLE FIELD MAPPING - Handle different backend response formats
+      let translatedText = '';
+      
+      // Try different possible field names for the translation
+      if (result.translatedText) {
+        translatedText = result.translatedText;
+      } else if (result.data?.translatedText) {
+        translatedText = result.data.translatedText;
+      } else if (result.translation) {
+        translatedText = result.translation;
+      } else if (result.data?.translation) {
+        translatedText = result.data.translation;
+      } else if (result.translatedLyrics) {
+        translatedText = result.translatedLyrics;
+      } else if (result.data?.translatedLyrics) {
+        translatedText = result.data.translatedLyrics;
+      } else {
+        // If no translation found, use the first string value we can find
+        const allValues = Object.values(result);
+        const stringValues = allValues.filter(val => typeof val === 'string' && val.length > 10);
+        if (stringValues.length > 0) {
+          translatedText = stringValues[0];
+        } else {
+          throw new Error('No translation text found in response');
+        }
+      }
+      
+      
       return {
-        translatedText: result.translatedText,
+        translatedText: translatedText,
         original: result.original || request.lyrics || '',
-        culturalNotes: result.culturalNotes || [],
-        confidence: result.confidence || 0.9,
-        processingTime: result.processingTime || 2.5,
+        culturalNotes: result.culturalNotes || result.data?.culturalNotes || [],
+        confidence: result.confidence || result.data?.confidence || 0.9,
+        processingTime: result.processingTime || result.data?.processingTime || 2.5,
         artist: result.artist || request.artist,
         song: result.song || request.song,
-        wordCount: result.wordCount
+        wordCount: result.wordCount || result.data?.wordCount,
+        success: true
       };
       
     } catch (error) {

@@ -5,15 +5,8 @@ const PaymentModal = ({ request, payment, onComplete, onBack, userAddress }) => 
   const [isProcessing, setIsProcessing] = useState(false);
 
   // Debug logs - UPDATED TO MATCH NEW BUTTON TEXT
-  console.log('💰 PAYMENT CONFIRMATION MODAL 💰');
-  console.log('Request exists:', request ? 'YES' : 'NO');
-  console.log('Artist:', request?.artist || request?.artistName);
-  console.log('Song:', request?.song || request?.songTitle);
-  console.log('Current Time:', new Date().toLocaleTimeString());
-  console.log('💰 PAYMENT CONFIRMATION BUTTON 💰');
 
   const handlePay = async () => {
-    console.log('PAYMENT CONFIRMATION CLICKED!');
     setIsProcessing(true);
     
     if (onComplete && typeof onComplete === 'function') {

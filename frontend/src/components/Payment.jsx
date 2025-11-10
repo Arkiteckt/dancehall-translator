@@ -273,7 +273,6 @@ E você nunca me deixou para trás, você nunca me deixou para trás`,
           fontSize: '14px',
           fontWeight: 'bold'
         }}>
-          🟢 APP LOADED: {new Date().toLocaleTimeString()}
         </div>
         
         <Layout 
