@@ -34,9 +34,9 @@ export const LanguageProvider = ({ children }) => {
     isPortuguese: language === 'pt'
   };
 
-  return (
-    <LanguageContext.Provider value={value}>
-      {children}
-    </LanguageContext.Provider>
+  return React.createElement(
+    LanguageContext.Provider,
+    { value: value },
+    children
   );
 };
