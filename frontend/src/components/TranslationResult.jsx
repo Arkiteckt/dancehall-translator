@@ -2,6 +2,8 @@ import React from 'react';
 import styled from 'styled-components';
 import { motion } from 'framer-motion';
 import { CheckCircle, Music, RotateCcw, Download, Users, ArrowLeft } from 'lucide-react';
+import { useLanguage } from '../contexts/LanguageContext';
+import { getTranslation } from '../translations';
 
 const ResultContainer = styled(motion.div)`
   background: #0f0f0f;
@@ -151,51 +153,39 @@ const BackButton = styled(Button)`
   }
 `;
 
-// ULTIMATE DEBUG COMPONENT
-const DebugInfo = styled.div`
-  background: #ff4444;
-  color: white;
-  padding: 1rem;
-  border-radius: 8px;
-  margin-bottom: 1rem;
-  border: 2px solid #ff0000;
-  font-family: monospace;
-  font-size: 0.8rem;
-`;
-
 function TranslationResult({ 
   request, 
   result, 
   onNewTranslation, 
-  onRequestHumanReview,  // FIXED PROP NAME
-  onBack
+  onRequestHumanReview,
+  onBack,
+  isLoading 
 }) {
-  // ULTIMATE DEBUGGING
+  const { language } = useLanguage();
 
   const downloadTranslation = () => {
-    // FIXED: Use the correct data structure
     const originalLyrics = request?.lyrics || 'No lyrics available';
     const translatedLyrics = result?.translatedText || result?.translated || result?.translation || 'No translation available';
     
     const content = `
-Dancehall Translator - Translation
+Dancehall Translator - ${getTranslation('translation', language)}
 ===================================
 
-Artist: ${request?.artist || 'Unknown Artist'}
-Song: ${request?.song || 'Unknown Song'}
-${request?.year ? `Year: ${request.year}` : ''}
+${getTranslation('artistName', language)}: ${request?.artist || 'Unknown Artist'}
+${getTranslation('songTitle', language)}: ${request?.song || 'Unknown Song'}
+${request?.year ? `${getTranslation('releaseYear', language)}: ${request.year}` : ''}
 
-ORIGINAL LYRICS (PATIOS):
+${getTranslation('originalLyrics', language)}:
 ${originalLyrics}
 
-TRANSLATION (BRAZILIAN PORTUGUESE):
+${getTranslation('translation', language)}:
 ${translatedLyrics}
 
 ${result?.culturalNotes && result.culturalNotes.length > 0 ? 
-`CULTURAL NOTES:
+`${getTranslation('culturalNotes', language)}:
 ${result.culturalNotes.map(note => `• ${note}`).join('\n')}` : ''}
 
-Translated by Dancehall Translator
+${language === 'pt' ? 'Traduzido por Dancehall Translator' : 'Translated by Dancehall Translator'}
     `.trim();
 
     const blob = new Blob([content], { type: 'text/plain' });
@@ -209,10 +199,8 @@ Translated by Dancehall Translator
     URL.revokeObjectURL(url);
   };
 
-  // FIXED: Use the actual API response structure
-  const originalLyrics = request?.lyrics || 'Original lyrics not available';
-  const translatedLyrics = result?.translatedText || result?.translated || result?.translation || 'Translation not available';
-
+  const originalLyrics = request?.lyrics || (language === 'pt' ? 'Letra original não disponível' : 'Original lyrics not available');
+  const translatedLyrics = result?.translatedText || result?.translated || result?.translation || (language === 'pt' ? 'Tradução não disponível' : 'Translation not available');
 
   return (
     <ResultContainer
@@ -220,58 +208,36 @@ Translated by Dancehall Translator
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -20 }}
     >
-      {/* ULTIMATE DEBUG INFO */}
-      <DebugInfo>
-        <div><strong>🎵 ULTIMATE DEBUG TranslationResult ��</strong></div>
-        <div>Has Result: {result ? 'YES' : 'NO'}</div>
-        <div>Original: {originalLyrics.length} chars</div>
-        <div>Translated: {translatedLyrics.length} chars</div>
-        <div>Result Keys: {result ? Object.keys(result).join(', ') : 'NONE'}</div>
-        <div>Original Preview: "{originalLyrics.substring(0, 50)}..."</div>
-        <div>Translated Preview: "{translatedLyrics.substring(0, 50)}..."</div>
-        <div>Has translatedText: {result?.translatedText ? 'YES' : 'NO'}</div>
-        <div>Has onRequestHumanReview: {onRequestHumanReview ? 'YES' : 'NO'}</div>
-      </DebugInfo>
-
       <SuccessHeader>
         <SuccessIcon>
           <CheckCircle size={24} />
         </SuccessIcon>
-        <SuccessTitle>Translation Complete!</SuccessTitle>
+        <SuccessTitle>{getTranslation('translationComplete', language)}</SuccessTitle>
         <SuccessSubtitle>
-          Your translation of <strong>{request?.artist || 'Unknown Artist'} - {request?.song || 'Unknown Song'}</strong> is ready
+          {language === 'pt' ? 'Sua tradução de' : 'Your translation of'} <strong>{request?.artist || 'Unknown Artist'} - {request?.song || 'Unknown Song'}</strong> {language === 'pt' ? 'está pronta' : 'is ready'}
         </SuccessSubtitle>
       </SuccessHeader>
 
-      {/* ORIGINAL LYRICS - WITH FORCED VISIBILITY */}
       <ContentSection>
         <SectionTitle>
           <Music size={18} />
-          Original Lyrics (Patois)
+          {getTranslation('originalLyrics', language)}
         </SectionTitle>
-        <LyricsBox style={{ 
-          border: '3px solid #00ff00',
-          background: originalLyrics.includes('not available') ? '#ff0000' : '#1a1a1a'
-        }}>
+        <LyricsBox>
           {originalLyrics}
         </LyricsBox>
       </ContentSection>
 
-      {/* TRANSLATED LYRICS - WITH FORCED VISIBILITY */}
       <ContentSection>
-        <SectionTitle>Translation to Brazilian Portuguese</SectionTitle>
-        <LyricsBox style={{ 
-          border: '3px solid #00ff00',
-          background: translatedLyrics.includes('not available') ? '#ff0000' : '#1a1a1a'
-        }}>
+        <SectionTitle>{getTranslation('translation', language)}</SectionTitle>
+        <LyricsBox>
           {translatedLyrics}
         </LyricsBox>
       </ContentSection>
 
-      {/* CULTURAL NOTES */}
       {result?.culturalNotes && result.culturalNotes.length > 0 && (
         <ContentSection>
-          <SectionTitle>Cultural Notes</SectionTitle>
+          <SectionTitle>{getTranslation('culturalNotes', language)}</SectionTitle>
           <NotesList>
             {result.culturalNotes.map((note, index) => (
               <NoteItem key={index}>• {note}</NoteItem>
@@ -287,7 +253,7 @@ Translated by Dancehall Translator
           whileTap={{ scale: 0.95 }}
         >
           <Download size={16} />
-          Download Translation
+          {getTranslation('downloadTranslation', language)}
         </DownloadButton>
 
         <BackButton
@@ -296,7 +262,7 @@ Translated by Dancehall Translator
           whileTap={{ scale: 0.95 }}
         >
           <ArrowLeft size={16} />
-          Back to Dashboard
+          {language === 'pt' ? 'Voltar ao Painel' : 'Back to Dashboard'}
         </BackButton>
         
         <HumanReviewButton
@@ -305,7 +271,7 @@ Translated by Dancehall Translator
           whileTap={{ scale: 0.95 }}
         >
           <Users size={16} />
-          Request Human Review
+          {getTranslation('requestHumanReview', language)}
         </HumanReviewButton>
         
         <NewTranslationButton
@@ -314,7 +280,7 @@ Translated by Dancehall Translator
           whileTap={{ scale: 0.95 }}
         >
           <RotateCcw size={16} />
-          New Translation
+          {getTranslation('newTranslation', language)}
         </NewTranslationButton>
       </ActionButtons>
     </ResultContainer>

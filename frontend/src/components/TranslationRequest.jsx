@@ -1,375 +1,246 @@
 import React, { useState } from 'react';
 import styled from 'styled-components';
 import { motion } from 'framer-motion';
-import { Search, Music, User, Calendar, AlertCircle, LogOut } from 'lucide-react';
+import { ArrowLeft, Music, User, Calendar, FileText } from 'lucide-react';
+import { useLanguage } from '../contexts/LanguageContext';
+import { getTranslation } from '../translations';
 
 const RequestContainer = styled(motion.div)`
-  background: rgba(255, 255, 255, 0.95);
-  border-radius: 25px;
-  padding: 40px;
   max-width: 600px;
   margin: 0 auto;
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
 `;
 
-const UserHeader = styled.div`
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 30px;
-  padding-bottom: 20px;
-  border-bottom: 1px solid #f0f2f5;
-`;
-
-const UserInfo = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 12px;
-`;
-
-const UserAvatar = styled.div`
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  background: linear-gradient(45deg, #0052FF, #0052FF);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: white;
-  font-weight: 600;
-`;
-
-const UserDetails = styled.div`
-  display: flex;
-  flex-direction: column;
-`;
-
-const UserAddress = styled.span`
-  font-family: 'Monaco', 'Courier New', monospace;
-  font-size: 0.9rem;
-  color: #666;
-`;
-
-const DisconnectButton = styled.button`
-  background: #f8f9fa;
-  border: 1px solid #e1e5e9;
+const BackButton = styled(motion.button)`
+  background: transparent;
+  border: 1px solid #2a2a2a;
+  color: #888;
+  padding: 0.5rem 1rem;
   border-radius: 8px;
-  padding: 8px 12px;
-  color: #666;
-  font-size: 0.9rem;
   cursor: pointer;
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 0.5rem;
+  margin-bottom: 2rem;
+  font-size: 0.9rem;
   transition: all 0.3s ease;
 
   &:hover {
-    background: #e9ecef;
-    color: #333;
+    background: #2a2a2a;
+    color: #ffffff;
   }
 `;
 
-const Title = styled.h2`
-  color: #333;
-  font-size: 2.2rem;
-  margin-bottom: 10px;
-  text-align: center;
+const FormCard = styled.div`
+  background: #0f0f0f;
+  border-radius: 16px;
+  padding: 2rem;
+  border: 1px solid #2a2a2a;
 `;
 
-const Subtitle = styled.p`
-  color: #666;
-  text-align: center;
-  margin-bottom: 40px;
-  font-size: 1.1rem;
-`;
-
-const WarningBanner = styled.div`
-  background: #fef3cd;
-  border: 1px solid #ffeaa7;
-  border-radius: 10px;
-  padding: 15px;
-  margin-bottom: 20px;
+const FormTitle = styled.h2`
+  color: #ffffff;
+  font-size: 1.5rem;
+  margin-bottom: 1.5rem;
   display: flex;
   align-items: center;
-  gap: 10px;
-  color: #856404;
-`;
-
-const Form = styled.form`
-  display: flex;
-  flex-direction: column;
-  gap: 25px;
+  gap: 0.5rem;
 `;
 
 const InputGroup = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
+  margin-bottom: 1.5rem;
 `;
 
 const Label = styled.label`
-  color: #333;
-  font-weight: 600;
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 0.5rem;
+  color: #ffffff;
+  margin-bottom: 0.5rem;
+  font-weight: 500;
 `;
 
 const Input = styled.input`
-  padding: 15px 20px;
-  border: 2px solid #e1e5e9;
-  border-radius: 15px;
+  width: 100%;
+  background: #1a1a1a;
+  border: 1px solid #2a2a2a;
+  border-radius: 8px;
+  padding: 0.75rem 1rem;
+  color: #ffffff;
   font-size: 1rem;
   transition: all 0.3s ease;
 
   &:focus {
     outline: none;
-    border-color: #667eea;
-    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    border-color: #00d4aa;
   }
 `;
 
 const TextArea = styled.textarea`
-  padding: 15px 20px;
-  border: 2px solid #e1e5e9;
-  border-radius: 15px;
+  width: 100%;
+  background: #1a1a1a;
+  border: 1px solid #2a2a2a;
+  border-radius: 8px;
+  padding: 0.75rem 1rem;
+  color: #ffffff;
   font-size: 1rem;
-  min-height: 120px;
+  min-height: 200px;
   resize: vertical;
   font-family: inherit;
+  transition: all 0.3s ease;
 
   &:focus {
     outline: none;
-    border-color: #667eea;
-    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    border-color: #00d4aa;
   }
 `;
 
 const SubmitButton = styled(motion.button)`
-  background: linear-gradient(45deg, #667eea, #764ba2);
+  background: linear-gradient(135deg, #00d4aa, #0099ff);
   border: none;
-  border-radius: 15px;
-  padding: 18px;
-  color: white;
-  font-size: 1.1rem;
+  color: #000;
+  padding: 1rem 2rem;
+  border-radius: 8px;
+  font-size: 1rem;
   font-weight: 600;
   cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-  margin-top: 20px;
+  width: 100%;
+  transition: all 0.3s ease;
 
-  &:hover {
+  &:hover:not(:disabled) {
     transform: translateY(-2px);
-    box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
   }
 
   &:disabled {
-    background: #ccc;
+    opacity: 0.6;
     cursor: not-allowed;
-    transform: none;
   }
 `;
 
-const ExampleRequests = styled.div`
-  margin-top: 30px;
-  padding: 20px;
-  background: #f8f9fa;
-  border-radius: 15px;
-`;
-
-const ExampleTitle = styled.h4`
-  color: #333;
-  margin-bottom: 15px;
-`;
-
-const ExampleList = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-`;
-
-const ExampleItem = styled(motion.button)`
-  background: white;
-  border: 1px solid #e1e5e9;
-  border-radius: 10px;
-  padding: 12px 15px;
-  text-align: left;
-  cursor: pointer;
-  transition: all 0.3s ease;
-
-  &:hover {
-    border-color: #667eea;
-    transform: translateX(5px);
-  }
-`;
-
-function TranslationRequest({ onSubmit, backendStatus, userAddress, onDisconnect }) {
+function TranslationRequest({ onSubmit, backendStatus, userAddress, onBack }) {
   const [formData, setFormData] = useState({
     artist: '',
     song: '',
     year: '',
     lyrics: ''
   });
+  const [isLoading, setIsLoading] = useState(false);
+  const { language } = useLanguage();
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    if (formData.artist && formData.song) {
-      onSubmit(formData);
+    if (!formData.artist.trim() || !formData.song.trim() || !formData.lyrics.trim()) {
+      alert(getTranslation('error', language) + ': ' + (language === 'pt' ? 'Preencha todos os campos obrigatórios' : 'Please fill in all required fields'));
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      await onSubmit({
+        ...formData,
+        id: `req_${Date.now()}`
+      });
+    } catch (error) {
+      console.error('Submission error:', error);
+    } finally {
+      setIsLoading(false);
     }
   };
 
-  const handleExampleClick = (example) => {
-    setFormData(example);
+  const handleInputChange = (field, value) => {
+    setFormData(prev => ({
+      ...prev,
+      [field]: value
+    }));
   };
-
-  const shortenAddress = (addr) => {
-    return `${addr.slice(0, 6)}...${addr.slice(-4)}`;
-  };
-
-  const examples = [
-    {
-      artist: 'Vybz Kartel',
-      song: 'Fever',
-      year: '2011',
-      lyrics: ''
-    },
-    {
-      artist: 'Beenie Man',
-      song: 'Who Am I',
-      year: '1997',
-      lyrics: ''
-    },
-    {
-      artist: 'Spice',
-      song: 'So Mi Like It',
-      year: '2014',
-      lyrics: ''
-    }
-  ];
-
-  const isBackendConnected = backendStatus === 'connected';
 
   return (
     <RequestContainer
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: -20 }}
+      transition={{ duration: 0.5 }}
     >
-      <UserHeader>
-        <UserInfo>
-          <UserAvatar>
-            {userAddress?.slice(2, 4).toUpperCase()}
-          </UserAvatar>
-          <UserDetails>
-            <div style={{ fontWeight: 600 }}>Connected</div>
-            <UserAddress>{shortenAddress(userAddress)}</UserAddress>
-          </UserDetails>
-        </UserInfo>
-        <DisconnectButton onClick={onDisconnect}>
-          <LogOut size={16} />
-          Disconnect
-        </DisconnectButton>
-      </UserHeader>
+      <BackButton
+        onClick={onBack}
+        whileHover={{ scale: 1.05 }}
+        whileTap={{ scale: 0.95 }}
+      >
+        <ArrowLeft size={16} />
+        {getTranslation('backToDashboard', language)}
+      </BackButton>
 
-      <Title>Request Translation</Title>
-      <Subtitle>Fill in the song details to translate</Subtitle>
+      <FormCard>
+        <FormTitle>
+          <Music size={24} />
+          {getTranslation('startTranslation', language)}
+        </FormTitle>
 
-      {!isBackendConnected && (
-        <WarningBanner>
-          <AlertCircle size={20} />
-          <div>
-            <strong>Backend not connected</strong>
-            <div style={{ fontSize: '0.9rem', marginTop: '4px' }}>
-              Make sure the backend server is running on port 3001
-            </div>
-          </div>
-        </WarningBanner>
-      )}
+        <form onSubmit={handleSubmit}>
+          <InputGroup>
+            <Label>
+              <User size={16} />
+              {getTranslation('artistName', language)} *
+            </Label>
+            <Input
+              type="text"
+              value={formData.artist}
+              onChange={(e) => handleInputChange('artist', e.target.value)}
+              placeholder={language === 'pt' ? 'Ex: Vybz Kartel' : 'Ex: Vybz Kartel'}
+              required
+            />
+          </InputGroup>
 
-      <Form onSubmit={handleSubmit}>
-        <InputGroup>
-          <Label>
-            <User size={18} />
-            Artist
-          </Label>
-          <Input
-            type="text"
-            placeholder="ex: Vybz Kartel"
-            value={formData.artist}
-            onChange={(e) => setFormData({...formData, artist: e.target.value})}
-            required
-          />
-        </InputGroup>
+          <InputGroup>
+            <Label>
+              <Music size={16} />
+              {getTranslation('songTitle', language)} *
+            </Label>
+            <Input
+              type="text"
+              value={formData.song}
+              onChange={(e) => handleInputChange('song', e.target.value)}
+              placeholder={language === 'pt' ? 'Ex: Fever' : 'Ex: Fever'}
+              required
+            />
+          </InputGroup>
 
-        <InputGroup>
-          <Label>
-            <Music size={18} />
-            Song Name
-          </Label>
-          <Input
-            type="text"
-            placeholder="ex: Fever"
-            value={formData.song}
-            onChange={(e) => setFormData({...formData, song: e.target.value})}
-            required
-          />
-        </InputGroup>
+          <InputGroup>
+            <Label>
+              <Calendar size={16} />
+              {getTranslation('releaseYear', language)}
+            </Label>
+            <Input
+              type="number"
+              value={formData.year}
+              onChange={(e) => handleInputChange('year', e.target.value)}
+              placeholder={language === 'pt' ? 'Ex: 2010' : 'Ex: 2010'}
+              min="1900"
+              max="2024"
+            />
+          </InputGroup>
 
-        <InputGroup>
-          <Label>
-            <Calendar size={18} />
-            Year (Optional)
-          </Label>
-          <Input
-            type="number"
-            placeholder="ex: 2011"
-            min="1980"
-            max={new Date().getFullYear()}
-            value={formData.year}
-            onChange={(e) => setFormData({...formData, year: e.target.value})}
-          />
-        </InputGroup>
+          <InputGroup>
+            <Label>
+              <FileText size={16} />
+              {getTranslation('pasteLyrics', language)} *
+            </Label>
+            <TextArea
+              value={formData.lyrics}
+              onChange={(e) => handleInputChange('lyrics', e.target.value)}
+              placeholder={language === 'pt' ? 'Cole a letra original em Patois Jamaicano aqui...' : 'Paste the original lyrics in Jamaican Patois here...'}
+              required
+            />
+          </InputGroup>
 
-        <InputGroup>
-          <Label>
-            Lyrics (Optional)
-          </Label>
-          <TextArea
-            placeholder="Paste the lyrics here if you already have them. If not, we'll find them for you!"
-            value={formData.lyrics}
-            onChange={(e) => setFormData({...formData, lyrics: e.target.value})}
-          />
-        </InputGroup>
-
-        <SubmitButton
-          type="submit"
-          whileHover={isBackendConnected ? { scale: 1.02 } : {}}
-          whileTap={isBackendConnected ? { scale: 0.98 } : {}}
-          disabled={!isBackendConnected}
-        >
-          <Search size={20} />
-          {isBackendConnected ? 'Search & Calculate Price' : 'Backend Offline'}
-        </SubmitButton>
-      </Form>
-
-      <ExampleRequests>
-        <ExampleTitle>Popular Examples:</ExampleTitle>
-        <ExampleList>
-          {examples.map((example, index) => (
-            <ExampleItem
-              key={index}
-              type="button"
-              onClick={() => handleExampleClick(example)}
-              whileHover={{ x: 5 }}
-              whileTap={{ scale: 0.95 }}
-            >
-              <strong>{example.artist}</strong> - {example.song} ({example.year})
-            </ExampleItem>
-          ))}
-        </ExampleList>
-      </ExampleRequests>
+          <SubmitButton
+            type="submit"
+            disabled={isLoading || backendStatus !== 'connected'}
+            whileHover={!isLoading && backendStatus === 'connected' ? { scale: 1.02 } : {}}
+            whileTap={!isLoading && backendStatus === 'connected' ? { scale: 0.98 } : {}}
+          >
+            {isLoading ? getTranslation('estimatingPrice', language) : getTranslation('translate', language)}
+          </SubmitButton>
+        </form>
+      </FormCard>
     </RequestContainer>
   );
 }

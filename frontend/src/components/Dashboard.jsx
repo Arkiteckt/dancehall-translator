@@ -1,150 +1,97 @@
 import React from 'react';
 import styled from 'styled-components';
 import { motion } from 'framer-motion';
-import { Music, Users, Clock, TrendingUp } from 'lucide-react';
+import { Play, Globe } from 'lucide-react';
+import { useLanguage } from '../contexts/LanguageContext';
+import { getTranslation } from '../translations';
 
 const DashboardContainer = styled(motion.div)`
-  max-width: 1200px;
+  max-width: 800px;
   margin: 0 auto;
+  text-align: center;
 `;
 
-const WelcomeSection = styled.div`
+const HeroSection = styled.div`
   margin-bottom: 3rem;
 `;
 
-const WelcomeTitle = styled.h1`
-  font-size: 2.5rem;
+const Title = styled.h1`
+  font-size: 3rem;
   font-weight: 700;
-  background: linear-gradient(45deg, #667eea, #764ba2);
+  background: linear-gradient(135deg, #00d4aa, #0099ff);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
-  margin-bottom: 0.5rem;
+  margin-bottom: 1rem;
 `;
 
-const WelcomeSubtitle = styled.p`
-  color: #8f9bb3;
-  font-size: 1.1rem;
+const Subtitle = styled.p`
+  font-size: 1.2rem;
+  color: #888;
+  margin-bottom: 2rem;
+  line-height: 1.6;
 `;
 
 const StatsGrid = styled.div`
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
   gap: 1.5rem;
   margin-bottom: 3rem;
 `;
 
-const StatCard = styled(motion.div)`
-  background: #1a1d23;
-  border: 1px solid #2a2f3a;
-  border-radius: 16px;
+const StatCard = styled.div`
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid #2a2a2a;
+  border-radius: 12px;
   padding: 1.5rem;
-  display: flex;
-  align-items: center;
-  gap: 1rem;
+  backdrop-filter: blur(10px);
 `;
 
-const StatIcon = styled.div`
-  width: 48px;
-  height: 48px;
-  border-radius: 12px;
-  background: linear-gradient(45deg, #667eea, #764ba2);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: white;
-`;
-
-const StatContent = styled.div`
-  flex: 1;
-`;
-
-const StatValue = styled.div`
-  font-size: 1.5rem;
+const StatNumber = styled.div`
+  font-size: 2rem;
   font-weight: 700;
-  color: #ffffff;
-  margin-bottom: 0.25rem;
-`;
-
-const StatLabel = styled.div`
-  color: #8f9bb3;
-  font-size: 0.9rem;
-`;
-
-const ActionGrid = styled.div`
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 1.5rem;
-`;
-
-const ActionCard = styled(motion.button)`
-  background: #1a1d23;
-  border: 1px solid #2a2f3a;
-  border-radius: 16px;
-  padding: 2rem;
-  text-align: left;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  border: none;
-
-  &:hover {
-    border-color: #667eea;
-    transform: translateY(-5px);
-  }
-`;
-
-const ActionIcon = styled.div`
-  width: 56px;
-  height: 56px;
-  border-radius: 12px;
-  background: linear-gradient(45deg, #667eea, #764ba2);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: white;
-  margin-bottom: 1rem;
-`;
-
-const ActionTitle = styled.h3`
-  font-size: 1.25rem;
-  font-weight: 600;
-  color: #ffffff;
+  color: #00d4aa;
   margin-bottom: 0.5rem;
 `;
 
-const ActionDescription = styled.p`
-  color: #8f9bb3;
-  line-height: 1.5;
+const StatLabel = styled.div`
+  color: #888;
+  font-size: 0.9rem;
+`;
+
+const CTAButton = styled(motion.button)`
+  background: linear-gradient(135deg, #00d4aa, #0099ff);
+  border: none;
+  color: #000;
+  padding: 1rem 2rem;
+  border-radius: 12px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0 auto;
+  transition: all 0.3s ease;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 30px rgba(0, 212, 170, 0.3);
+  }
+`;
+
+const LanguageInfo = styled.div`
+  background: rgba(0, 157, 255, 0.1);
+  border: 1px solid #0099ff;
+  border-radius: 8px;
+  padding: 1rem;
+  margin: 2rem auto;
+  max-width: 500px;
+  color: #0099ff;
 `;
 
 function Dashboard({ onStartTranslation, userAddress }) {
-  const stats = [
-    { icon: Music, value: '12', label: 'Translations Completed' },
-    { icon: Users, value: '3', label: 'Active Bounties' },
-    { icon: Clock, value: '24m', label: 'Avg. Translation Time' },
-    { icon: TrendingUp, value: '98%', label: 'Accuracy Rate' },
-  ];
-
-  const actions = [
-    {
-      icon: Music,
-      title: 'New Translation',
-      description: 'Translate Dancehall lyrics to Brazilian Portuguese with AI-powered accuracy',
-      onClick: onStartTranslation,
-    },
-    {
-      icon: Users,
-      title: 'View Bounties',
-      description: 'Check active translation bounties and contribute to the community',
-      onClick: () => console.log('Navigate to bounties'),
-    },
-    {
-      icon: Clock,
-      title: 'Translation History',
-      description: 'Review your past translations and cultural notes',
-      onClick: () => console.log('Navigate to history'),
-    },
-  ];
+  const { language, isPortuguese } = useLanguage();
 
   return (
     <DashboardContainer
@@ -152,58 +99,49 @@ function Dashboard({ onStartTranslation, userAddress }) {
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
     >
-      <WelcomeSection>
-        <WelcomeTitle>Welcome to Dancehall Translator</WelcomeTitle>
-        <WelcomeSubtitle>
-          AI-powered translations with human verification. Connect Jamaican culture with Brazilian Portuguese.
-        </WelcomeSubtitle>
-      </WelcomeSection>
+      <HeroSection>
+        <Title>Dancehall Translator</Title>
+        <Subtitle>
+          {getTranslation('tagline', language)}
+        </Subtitle>
+        
+        <LanguageInfo>
+          <Globe size={20} style={{ marginBottom: '0.5rem' }} />
+          <div>
+            <strong>Current Language:</strong> {isPortuguese ? 'Português Brasileiro' : 'English'}
+          </div>
+          <div style={{ fontSize: '0.9rem', marginTop: '0.5rem', opacity: 0.8 }}>
+            {isPortuguese 
+              ? 'Clique no botão "EN/PT" no cabeçalho para mudar o idioma' 
+              : 'Click the "EN/PT" button in the header to switch languages'
+            }
+          </div>
+        </LanguageInfo>
+      </HeroSection>
 
       <StatsGrid>
-        {stats.map((stat, index) => {
-          const IconComponent = stat.icon;
-          return (
-            <StatCard
-              key={stat.label}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: index * 0.1 }}
-              whileHover={{ scale: 1.05 }}
-            >
-              <StatIcon>
-                <IconComponent size={24} />
-              </StatIcon>
-              <StatContent>
-                <StatValue>{stat.value}</StatValue>
-                <StatLabel>{stat.label}</StatLabel>
-              </StatContent>
-            </StatCard>
-          );
-        })}
+        <StatCard>
+          <StatNumber>AI</StatNumber>
+          <StatLabel>{getTranslation('translation', language)}</StatLabel>
+        </StatCard>
+        <StatCard>
+          <StatNumber>24/7</StatNumber>
+          <StatLabel>{isPortuguese ? 'Disponível' : 'Available'}</StatLabel>
+        </StatCard>
+        <StatCard>
+          <StatNumber>USDC</StatNumber>
+          <StatLabel>{isPortuguese ? 'Pagamento' : 'Payments'}</StatLabel>
+        </StatCard>
       </StatsGrid>
 
-      <ActionGrid>
-        {actions.map((action, index) => {
-          const IconComponent = action.icon;
-          return (
-            <ActionCard
-              key={action.title}
-              onClick={action.onClick}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: index * 0.1 + 0.4 }}
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-            >
-              <ActionIcon>
-                <IconComponent size={24} />
-              </ActionIcon>
-              <ActionTitle>{action.title}</ActionTitle>
-              <ActionDescription>{action.description}</ActionDescription>
-            </ActionCard>
-          );
-        })}
-      </ActionGrid>
+      <CTAButton
+        onClick={onStartTranslation}
+        whileHover={{ scale: 1.05 }}
+        whileTap={{ scale: 0.95 }}
+      >
+        <Play size={20} />
+        {getTranslation('startTranslation', language)}
+      </CTAButton>
     </DashboardContainer>
   );
 }
