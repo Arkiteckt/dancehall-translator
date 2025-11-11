@@ -3,7 +3,10 @@ import { ethers } from 'ethers';
 import styled, { createGlobalStyle } from 'styled-components';
 import { motion, AnimatePresence } from 'framer-motion';
 
-// Import new layout components
+// Import contexts
+import { LanguageProvider } from './contexts/LanguageContext';
+
+// Import components
 import Layout from './components/Layout';
 import Dashboard from './components/Dashboard';
 import WalletConnect from './components/WalletConnect';
@@ -37,10 +40,7 @@ const AppContainer = styled.div`
   background: #0a0b0d;
 `;
 
-function App() {
-  // FORCE REFRESH DETECTION
-  console.log('🔄 APP.JSX RELOADED - Version: ', Date.now());
-  
+function AppContent() {
   const [walletConnected, setWalletConnected] = useState(false);
   const [userAddress, setUserAddress] = useState('');
   const [currentView, setCurrentView] = useState('dashboard');
@@ -68,7 +68,7 @@ function App() {
     checkBackend();
   }, []);
 
-  // ADD THIS DEBUG EFFECT
+  // Debug effect
   useEffect(() => {
     console.log('🔍 APP STATE UPDATE:');
     console.log('🔍 currentView:', currentView);
@@ -82,7 +82,6 @@ function App() {
     setCurrentView('dashboard');
   };
 
-  // Safe price extraction helper
   const getSafePrice = (priceData) => {
     if (!priceData) {
       console.error('Price data is completely undefined or null');
@@ -97,7 +96,6 @@ function App() {
     return priceData.price.toString();
   };
 
-  // PROPER PAYMENT FLOW - FIXED VERSION
   const handleTranslationRequest = async (request) => {
     console.log('🎵🎵🎵 handleTranslationRequest CALLED 🎵🎵🎵');
     console.log('🎵 Received request data:', request);
@@ -130,7 +128,6 @@ function App() {
     }
   };
 
-  // REAL AI TRANSLATION - UPDATED VERSION
   const handlePaymentComplete = async () => {
     console.log('💰 translationRequest:', translationRequest);
     
@@ -141,7 +138,6 @@ function App() {
       return;
     }
 
-    // Create a safe request object with fallbacks
     const safeRequest = {
       artist: translationRequest.artist || 'Unknown Artist',
       song: translationRequest.song || 'Unknown Song',
@@ -155,8 +151,6 @@ function App() {
     
     try {
       console.log('🔵 Calling REAL translationAPI.requestTranslation...');
-      
-      // CALL REAL BACKEND API
       const apiResult = await translationAPI.requestTranslation(safeRequest);
       console.log('🟢 REAL Backend API returned:', apiResult);
       
@@ -173,9 +167,8 @@ function App() {
       setCurrentView('result');
       
     } catch (error) {
-      console.error('�� REAL Translation failed:', error);
+      console.error('🔴 REAL Translation failed:', error);
       
-      // FALLBACK: Show error but still display original lyrics
       const fallbackResult = {
         original: safeRequest.lyrics,
         translatedText: `❌ TRANSLATION ERROR: ${error.message}\n\nOriginal lyrics:\n${safeRequest.lyrics}`,
@@ -231,7 +224,6 @@ function App() {
     );
   }
 
-  // FINAL CHECK LOG - Only log when we're about to render result view
   if (currentView === 'result' && translationResult) {
     console.log('🎵 FINAL CHECK - About to render TranslationResult:');
     console.log('🎵 translationResult:', translationResult);
@@ -280,7 +272,6 @@ function App() {
             
             {currentView === 'result' && translationResult && (
               <>
-                {/* ENHANCED DEBUG PANEL - FIXED */}
                 <div style={{
                   position: 'fixed',
                   top: '50px',
@@ -296,7 +287,6 @@ function App() {
                   🎵 DEBUG: Rendering TranslationResult
                 </div>
                 
-                {/* SECOND DEBUG PANEL */}
                 <div style={{
                   position: 'fixed',
                   top: '200px',
@@ -337,6 +327,14 @@ function App() {
         </Layout>
       </AppContainer>
     </>
+  );
+}
+
+function App() {
+  return (
+    <LanguageProvider>
+      <AppContent />
+    </LanguageProvider>
   );
 }
 
