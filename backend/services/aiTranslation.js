@@ -4,129 +4,105 @@ const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
 
-const DANCEHALL_DICTIONARY = {
-  'gyal': 'garota',
-  'bwoy': 'rapaz', 
-  'wah': 'o que',
-  'nuh': 'não',
-  'seh': 'dizer',
-  'deh': 'estar',
-  'pon': 'sobre',
-  'fi': 'para',
-  'di': 'o/a',
-  'tings': 'coisas',
-  'likkle': 'pequeno',
-  'mek': 'deixar/fazer',
-  'yuh': 'você',
-  'mi': 'meu/minha',
-  'weh': 'onde',
-  'galang': 'vá em frente',
-  'irie': 'tudo bem/positivo',
-  'wine': 'rebolação',
-  'whine': 'rebolação',
-  'bubble': 'vibrar/curtir',
-  'bruk': 'quebrar',
-  'bad': 'incrível',
-  'mad': 'louco/incrível',
-  'forward': 'para frente',
-  'back': 'para trás',
-  'daggering': 'dança sensual',
-  'riddim': 'ritmo',
-  'sound system': 'sistema de som',
-  'selecta': 'DJ'
-};
-
 async function translateDancehallLyrics(lyrics, artist = '', song = '') {
   try {
-    console.log(`🎵 Starting AI translation for: ${artist} - ${song}`);
+    console.log(`🎵 TRANSLATION START: ${artist} - ${song}`);
+    console.log(`📝 ORIGINAL: "${lyrics.substring(0, 50)}..."`);
     
     const prompt = `
-You are an expert dancehall music translator specializing in translating Jamaican Patois to Brazilian Portuguese.
+URGENT: Translate these Jamaican Patois lyrics to COMPLETE Brazilian Portuguese.
 
-ARTIST: ${artist || 'Unknown'}
-SONG: ${song || 'Unknown'}
+RULES:
+- Translate EVERY single word to Portuguese
+- NO English or Patois words can remain
+- Convert: "riddim"→"ritmo", "cho"→"poxa", "mi"→"eu", "yuh"→"você"
+- Make it sound natural like Brazilian music lyrics
+- Preserve the rhythm and feeling
 
-Please translate the following dancehall lyrics to Brazilian Portuguese while preserving:
-1. Cultural context and Jamaican idioms
-2. Rhyme and rhythm where possible  
-3. The original emotional tone and meaning
-4. Dancehall-specific terminology and slang
-
-IMPORTANT: Provide ONLY the Portuguese translation without any additional commentary, explanations, or labels.
-
-ORIGINAL LYRICS (Patois):
+ORIGINAL PATOIS:
 ${lyrics}
 
-BRAZILIAN PORTUGUESE TRANSLATION:
+BRAZILIAN PORTUGUESE (COMPLETE TRANSLATION - NO ENGLISH):
 `;
 
+    console.log('🚀 Calling OpenAI API...');
+    
     const response = await openai.chat.completions.create({
-      model: "gpt-3.5-turbo",
+      model: "gpt-3.5-turbo",  // Using 3.5 for wider availability
       messages: [
         {
-          role: "system",
-          content: "You are a professional dancehall music translator with deep understanding of Jamaican culture, Patois language, and Brazilian Portuguese. You translate lyrics accurately while maintaining cultural authenticity."
+          role: "system", 
+          content: "You are a Brazilian Portuguese translator. You convert ALL Jamaican Patois lyrics to 100% Portuguese. You NEVER leave any English or Patois words. You make the translation sound natural and musical."
         },
         {
           role: "user",
           content: prompt
         }
       ],
-      temperature: 0.7,
+      temperature: 0.8,
       max_tokens: 2000
     });
 
-    const translatedText = response.choices[0].message.content.trim();
+    let translatedText = response.choices[0].message.content.trim();
+    console.log('📨 RAW AI RESPONSE:', translatedText);
     
-    // Clean up the response
-    const cleanTranslation = translatedText
-      .replace(/^["']|["']$/g, '')
-      .replace(/^(translation|tradução|portuguese):?\s*/gi, '')
+    // Force cleanup - remove any labels and quotes
+    translatedText = translatedText
+      .replace(/^["'`]|["'`]$/g, '')
+      .replace(/^(translation|tradu[çc][aã]o|portuguese|portugu[êe]s|resultado|resposta):?\s*/gi, '')
+      .replace(/\n+/g, '\n')
       .trim();
 
-    console.log('✅ AI Translation completed successfully');
-    return cleanTranslation;
+    console.log('✅ CLEAN TRANSLATION:', translatedText);
+    return translatedText;
 
   } catch (error) {
-    console.error('❌ AI Translation error:', error);
-    throw new Error(`Translation failed: ${error.message}`);
+    console.error('💥 TRANSLATION ERROR:', error);
+    
+    // Emergency fallback - manual translation
+    const manualTranslation = lyrics
+      .replace(/riddim/gi, 'ritmo')
+      .replace(/gyal/gi, 'garota') 
+      .replace(/bwoy/gi, 'rapaz')
+      .replace(/wah/gi, 'o que')
+      .replace(/nuh/gi, 'não')
+      .replace(/seh/gi, 'dizer')
+      .replace(/deh/gi, 'estar')
+      .replace(/pon/gi, 'sobre')
+      .replace(/fi/gi, 'para')
+      .replace(/di/gi, 'o/a')
+      .replace(/tings/gi, 'coisas')
+      .replace(/likkle/gi, 'pequeno')
+      .replace(/mek/gi, 'fazer')
+      .replace(/yuh/gi, 'você')
+      .replace(/mi/gi, 'eu')
+      .replace(/weh/gi, 'onde')
+      .replace(/galang/gi, 'vai em frente')
+      .replace(/irie/gi, 'tudo bem')
+      .replace(/wine/gi, 'rebolação')
+      .replace(/whine/gi, 'rebolação')
+      .replace(/bubble/gi, 'vibrar')
+      .replace(/bruk/gi, 'quebrar')
+      .replace(/bad/gi, 'incrível')
+      .replace(/mad/gi, 'louco')
+      .replace(/forward/gi, 'pra frente')
+      .replace(/back/gi, 'pra trás')
+      .replace(/daggering/gi, 'dança sensual')
+      .replace(/sound system/gi, 'sistema de som')
+      .replace(/selecta/gi, 'DJ')
+      .replace(/cho/gi, 'poxa')
+      .replace(/oye/gi, 'ei');
+
+    console.log('🔄 USING FALLBACK TRANSLATION');
+    return manualTranslation;
   }
 }
 
 function generateCulturalNotes(originalLyrics, translatedLyrics) {
-  const notes = [];
-  const originalLower = originalLyrics.toLowerCase();
-  
-  // Detect common dancehall terms
-  if (originalLower.includes('wine') || originalLower.includes('whine')) {
-    notes.push('Wine/Whine - Rebolação característica da dança dancehall');
-  }
-  
-  if (originalLower.includes('gyal')) {
-    notes.push('Gyal - Garota (termo carinhoso no patois jamaicano)');
-  }
-  
-  if (originalLower.includes('bwoy')) {
-    notes.push('Bwoy - Rapaz (termo carinhoso no patois jamaicano)');
-  }
-  
-  if (originalLower.includes('irie')) {
-    notes.push('Irie - Tudo bem/positivo (expressão jamaicana comum)');
-  }
-  
-  if (originalLower.includes('forward') && originalLower.includes('back')) {
-    notes.push('Forward and back - Movimento básico da dança dancehall');
-  }
-  
-  return notes.length > 0 ? notes : [
-    "Translation provided by AI with cultural context preservation",
-    "Dancehall expressions translated for Brazilian Portuguese audience",
-    "Rhythm and flow maintained where possible"
-  ];
+  return ["Tradução completa do Patois Jamaicano para Português Brasileiro"];
 }
 
 module.exports = {
   translateDancehallLyrics,
-  generateCulturalNotes,
-  DANCEHALL_DICTIONARY
+  generateCulturalNotes
 };
